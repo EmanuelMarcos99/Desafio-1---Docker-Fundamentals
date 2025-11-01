@@ -18,11 +18,14 @@ echo "O container foi removido, mas o volume 'nginx_logs' e seus dados ainda exi
 echo "Passo 5: Criando um NOVO container para validar a persistencia dos logs..."
 docker container run --name nginx-validador -d -p 8080:80 --mount type=volume,source=nginx_logs,target=/var/log/nginx nginx
 
+echo "Aguardando 2 segundos para o novo Nginx iniciar..." 
+sleep 2
+
 echo "Passo 6: Verificando o conteudo do 'access.log' dentro do NOVO container..."
 docker exec nginx-validador cat /var/log/nginx/access.log
 
 echo "Limpeza: Parando e removendo o container de validacao..."
-docker nginx-validador
-docker nginx-validador
+docker stop nginx-validador
+docker rm nginx-validador
 
 echo "Concluído"

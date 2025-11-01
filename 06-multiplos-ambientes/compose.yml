@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  postgre:
+    image: postgres:13.16
+    restart: always
+    environment:
+      # As credenciais agora são lidas do arquivo .env
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    ports:
+      # A porta externa (host) agora é variável
+      # A porta interna (container) permanece 5432
+      - "${DB_PORT_HOST}:5432"
+    volumes:
+      - postgre_data:/var/lib/postgresql/data
+    networks:
+      - app-network
+
+  ecommerce:
+    image: fabricioveronez/fake-shop
+    restart: always
+    environment:
+      DB_HOST: postgre # Este é o nome do serviço, não muda
+      # As credenciais são as mesmas do banco
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
+      DB_PORT: "5432" # Esta é a porta interna, não muda
+      FLASK_APP: index.py
+    ports:
+      # A porta externa (host) da aplicação também é variável
+      - "${APP_PORT_HOST}:5000"
+    depends_on:
+      - postgre
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  postgre_data:

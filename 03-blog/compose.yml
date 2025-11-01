@@ -1,0 +1,46 @@
+version: '3.8'
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: mysql_blog
+    # Variáveis de ambiente necessárias para a inicialização do MySQL
+    environment:
+      MYSQL_DATABASE: wordpress
+      MYSQL_USER: wordpress
+      MYSQL_PASSWORD: strongpassword
+      MYSQL_ROOT_PASSWORD: verystrongrootpassword
+    # A seção 'volumes' é a chave para a persistência de dados
+    volumes:
+      # Tudo que o MySQL escrever em /var/lib/mysql será salvo no volume.
+      - mysql_data:/var/lib/mysql
+    networks:
+      - blog-network
+  wordpress:
+    # O comando depends_on garante que o contêiner do WordPress só será iniciado DEPOIS que o container mysql estiver pronto.
+    depends_on:
+      - mysql
+    image: wordpress:latest
+    container_name: wordpress_blog
+    ports:
+      - "8080:80"
+    # Variáveis de ambiente
+    environment:
+      WORDPRESS_DB_HOST: mysql:3306
+      WORDPRESS_DB_USER: wordpress
+      WORDPRESS_DB_PASSWORD: strongpassword
+      WORDPRESS_DB_NAME: wordpress
+
+    volumes:
+      - wordpress_data:/var/www/html
+    networks:
+      - blog-network
+
+networks:
+  blog-network:
+    # Usamos o driver bridge 
+    driver: bridge
+
+# Declaramos os volumes nomeados que usamos
+volumes:
+  db_data:
+  wordpress_data:
